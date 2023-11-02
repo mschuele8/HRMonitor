@@ -40,7 +40,6 @@ void loop() {
   int myBPM = pulseSensor.getBeatsPerMinute();
 
   if (pulseSensor.sawStartOfBeat()) {
-    Serial.println("♥ A HeartBeat Happened !");
     Serial.print("BPM: ");
     Serial.println(myBPM);
 
@@ -51,6 +50,12 @@ void loop() {
     display.setCursor(0, 0);
     display.print("BPM: ");
     display.println(myBPM);
+    if (myBPM<55) {
+      display.print("Resting Heart Rate is Low");
+    }
+    if (myBPM>90) {
+      display.print("Resting Heart Rate is High");
+    }
     display.display();
   }
 

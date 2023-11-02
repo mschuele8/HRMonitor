@@ -1,0 +1,66 @@
+#include <Adafruit_GFX.h> 
+#include <Adafruit_SSD1306.h>
+#define USE_ARDUINO_INTERRUPTS true
+#include <PulseSensorPlayground.h>
+
+const int PulseWire = 0;
+const int LED13 = 13;
+int Threshold = 550;
+
+PulseSensorPlayground pulseSensor;
+
+// OLED Display Configuration
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 32
+#define OLED_RESET    -1  // Reset pin (or -1 if you don't have a reset pin)
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+void setup() {
+  Serial.begin(9600);
+
+  pulseSensor.analogInput(PulseWire);
+  pulseSensor.blinkOnPulse(LED13);
+  pulseSensor.setThreshold(Threshold);
+
+  if (pulseSensor.begin()) {
+    Serial.println("PulseSensor object created!");
+  }
+
+  // Initialize OLED display
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))  {
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;);
+  }
+  display.display();
+  delay(2000);
+  display.clearDisplay();
+}
+
+void loop() {
+  int myBPM = pulseSensor.getBeatsPerMinute();
+
+  if (pulseSensor.sawStartOfBeat()) {
+    Serial.println("♥ A HeartBeat Happened !");
+    Serial.print("BPM: ");
+    Serial.println(myBPM);
+
+    // Display BPM on OLED
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0, 0);
+    display.print("BPM: ");
+    display.println(myBPM);
+    display.display();
+  }
+
+  // Check for data from the Serial Monitor
+  if (Serial.available() > 0) {
+    String data = Serial.readStringUntil('\n'); // Read data until a newline character
+
+    // Print the data on the Serial Monitor
+    Serial.println("Received from Serial Monitor: " + data);
+  }
+
+  delay(20);
+}

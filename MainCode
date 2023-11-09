@@ -2,30 +2,24 @@
 #include <Adafruit_SSD1306.h>
 #define USE_ARDUINO_INTERRUPTS true
 #include <PulseSensorPlayground.h>
-
 const int PulseWire = 0;
 const int LED13 = 13;
 int Threshold = 550;
-
 PulseSensorPlayground pulseSensor;
-
 // OLED Display Configuration
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 32
 #define OLED_RESET    -1  // Reset pin (or -1 if you don't have a reset pin)
+#define sensorPin A1
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-
 void setup() {
   Serial.begin(9600);
-
   pulseSensor.analogInput(PulseWire);
   pulseSensor.blinkOnPulse(LED13);
   pulseSensor.setThreshold(Threshold);
-
   if (pulseSensor.begin()) {
     Serial.println("PulseSensor object created!");
   }
-
   // Initialize OLED display
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))  {
     Serial.println(F("SSD1306 allocation failed"));
@@ -35,41 +29,10 @@ void setup() {
   delay(2000);
   display.clearDisplay();
 }
-int run;
-int buttonPin;
-
-void setup()
-{
-   run = 0; //starts stopped
-   buttonPin = 7; //whatever pin your button is plugged into
-
-   pinMode(buttonPin, INPUT_PULLUP);
-}
-
-void loop()
-{
-   //check button press here and if it is pressed then toggle run variable between 0 and 255; REQUIRED!
-   if(digitalRead(buttonPin) == LOW) //funcitons based off of button pulling input pin LOW
-   {
-      if(run == 0)
-      {
-          run = 255;
-      }
-      else
-      {
-          run = 0;
-      }
-   }
-
-   if(run > 0)
-   {
-    void loop() {
+void loop() {
   int myBPM = pulseSensor.getBeatsPerMinute();
 
   if (pulseSensor.sawStartOfBeat()) {
-    Serial.print("BPM: ");
-    Serial.println(myBPM);
-
     // Display BPM on OLED
     display.clearDisplay();
     display.setTextSize(1);
@@ -82,19 +45,37 @@ void loop()
     }
     if (myBPM>90) {
       display.print("Resting Heart Rate is High");
-    }
-    display.display();
+    // LM35 Temperature Sensor code
+  // Get the voltage reading from the LM35
+  int reading = analogRead(sensorPin);
+
+  // Convert that reading into voltage
+  float voltage = reading * (5.0 / 1024.0);
+
+  // Convert the voltage into the temperature in Celsius
+  float temperatureC = voltage * 100;
+
+  // Print the temperature in Celsius
+  float temperatureF = (temperatureC * 9.0 / 5.0) + 32.0;
+  display.setTextColor(SSD1306_WHITE);
+  display.setTextSize(1);
+    display.print("Temperature: ");
+    display.println(temperatureF);
+    display.print("\xC2\xB0"); // shows degree symbol
+    display.print("F");
+
+  delay(500); // wait half a second between readings
   }
 
   // Check for data from the Serial Monitor
   if (Serial.available() > 0) {
     String data = Serial.readStringUntil('\n'); // Read data until a newline character
-
     // Print the data on the Serial Monitor
     Serial.println("Received from Serial Monitor: " + data);
   }
-
-  delay(20);
+  delay(500);
+    
+  
+    display.display();
 }
-   }
 }

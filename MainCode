@@ -35,8 +35,35 @@ void setup() {
   delay(2000);
   display.clearDisplay();
 }
+int run;
+int buttonPin;
 
-void loop() {
+void setup()
+{
+   run = 0; //starts stopped
+   buttonPin = 7; //whatever pin your button is plugged into
+
+   pinMode(buttonPin, INPUT_PULLUP);
+}
+
+void loop()
+{
+   //check button press here and if it is pressed then toggle run variable between 0 and 255; REQUIRED!
+   if(digitalRead(buttonPin) == LOW) //funcitons based off of button pulling input pin LOW
+   {
+      if(run == 0)
+      {
+          run = 255;
+      }
+      else
+      {
+          run = 0;
+      }
+   }
+
+   if(run > 0)
+   {
+    void loop() {
   int myBPM = pulseSensor.getBeatsPerMinute();
 
   if (pulseSensor.sawStartOfBeat()) {
@@ -68,4 +95,6 @@ void loop() {
   }
 
   delay(20);
+}
+   }
 }
